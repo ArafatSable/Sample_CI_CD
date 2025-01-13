@@ -1,0 +1,35 @@
+name: Deploy Node.js App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Setup SSH
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Copy files to EC2
+      - name: Copy files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -r . ec2-user@${{ secrets.HOST }}:/home/ec2-user/app
+
+      # Deploy the app on EC2
+      - name: Deploy Application
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
+          cd /home/ec2-user/app
+          npm install
+          npm run start
+          EOF
