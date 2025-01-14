@@ -1,4 +1,4 @@
-name: Deploy Node.js App
+name: Deploy Node.js App with PM2
 
 on:
   push:
@@ -31,7 +31,14 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
           cd /home/ec2-user/app
           npm install
-          pm2 start server.js --name "node-app"
+          pm2 start server.js --name node-app
           pm2 save
-          pm2 startup
+          sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+          EOF
+
+      # Verify PM2 Process
+      - name: Check PM2 Status
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
+          pm2 list
           EOF
