@@ -31,5 +31,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.HOST }} << 'EOF'
           cd /home/ec2-user/app
           npm install
-          npm run start
+          pm2 start server.js --name "node-app"
+          pm2 save
+          pm2 startup
           EOF
